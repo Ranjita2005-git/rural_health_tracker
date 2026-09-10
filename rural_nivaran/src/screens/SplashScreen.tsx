@@ -17,7 +17,7 @@ export default function SplashScreen() {
   }, [])
 
   return (
-    <div className="h-full flex flex-col items-center justify-center bg-forest text-white px-8 pt-8 select-none">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-forest text-white px-8 pt-8 select-none">
       {/* Logo */}
       <div
         className="transition-all duration-700"
@@ -32,15 +32,15 @@ export default function SplashScreen() {
         className="text-center transition-all duration-700 delay-300"
         style={{ opacity: phase >= 0 ? 1 : 0, transform: phase >= 0 ? 'none' : 'translateY(16px)' }}
       >
-        <h1 className="devanagari text-4xl font-bold mb-1 tracking-tight">स्वास्थ्य सहायक</h1>
-        <p className="text-green-300 text-xs font-semibold tracking-widest uppercase">Swasthya Sahayak</p>
+        <h1 className="devanagari text-4xl font-bold mb-1 tracking-tight">Nivaran</h1>
+        <p className="text-green-300 text-xs font-semibold tracking-widest uppercase">Right care, right time, right place</p>
       </div>
 
       <div
         className="mt-5 text-center transition-all duration-700"
         style={{ opacity: phase >= 1 ? 1 : 0 }}
       >
-        <p className="devanagari text-green-100 text-base">अपनी सेहत, अपनी भाषा में</p>
+        <p className="devanagari text-green-100 text-base">तुमचे आरोग्य, तुमच्या भाषेत</p>
         <p className="text-green-400 text-xs mt-1">Your health, in your language</p>
       </div>
 
@@ -62,7 +62,7 @@ export default function SplashScreen() {
         <p className="text-green-500 text-[10px] font-semibold tracking-widest uppercase">
           National Health Mission
         </p>
-        <p className="text-green-600 text-[10px] mt-0.5">Ministry of Health &amp; Family Welfare</p>
+        <p className="text-green-600 text-[10px] mt-0.5">Ministry of Maharastra &amp; Family Welfare</p>
       </div>
     </div>
   )

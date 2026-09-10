@@ -7,6 +7,8 @@ export const facilities: Facility[] = [
     nameHi: 'रामपुर प्राथमिक स्वास्थ्य केंद्र',
     type: 'PHC',
     distance: 2.3,
+    latitude: 20.1847,
+    longitude: 80.0030,
     address: 'Rampur Village, Betul District, MP',
     addressHi: 'रामपुर गाँव, बैतूल जिला, मध्यप्रदेश',
     phone: '07141-234567',
@@ -37,6 +39,8 @@ export const facilities: Facility[] = [
     nameHi: 'खंडवा सामुदायिक स्वास्थ्य केंद्र',
     type: 'CHC',
     distance: 8.1,
+    latitude: 20.1900,
+    longitude: 80.0150,
     address: 'Khandwa Road, Betul, MP',
     addressHi: 'खंडवा रोड, बैतूल, मध्यप्रदेश',
     phone: '07141-345678',
@@ -68,6 +72,8 @@ export const facilities: Facility[] = [
     nameHi: 'जिला अस्पताल बैतूल',
     type: 'District Hospital',
     distance: 24.5,
+    latitude: 20.1750,
+    longitude: 80.0300,
     address: 'Civil Lines, Betul, MP 460001',
     addressHi: 'सिविल लाइन्स, बैतूल, मध्यप्रदेश 460001',
     phone: '07141-456789',
@@ -145,3 +151,5 @@ export const households: Household[] = [
     tags: [],
   },
 ]
+
+export { thaneFacilities } from './ThaneFacilities'

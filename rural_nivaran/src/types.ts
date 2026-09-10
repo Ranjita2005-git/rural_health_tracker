@@ -28,6 +28,8 @@ export interface Facility {
   nameHi: string
   type: 'PHC' | 'CHC' | 'District Hospital'
   distance: number
+  latitude: number
+  longitude: number
   address: string
   addressHi: string
   phone: string
