@@ -1,0 +1,232 @@
+{
+  "common": {
+    "home": "होम",
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफ़ाइल",
+    "settings": "सेटिंग्स",
+    "logout": "लॉगआउट",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "offline": "ऑफलाइन",
+    "away": "दूर",
+    "alert": "सतर्कता",
+    "back": "Back"
+  },
+ "language": {
+    "title": "भाषा",
+    "english": "English",
+    "marathi": "मराठी",
+    "hindi": "हिन्दी",
+    "bengali": "বাংলা"
+  },
+
+  "dashboard": {
+    "welcome": "स्वागत है",
+    "patients": "मरीज़",
+    "appointments": "अपॉइंटमेंट",
+    "healthRecords": "स्वास्थ्य रिकॉर्ड"
+  },
+
+  "villager": {
+    "villageName": "रामपुर गाँव",
+    "district": "बैतूल ज़िला, मध्य प्रदेश",
+    "greeting": "नमस्ते",
+    "lastSync": "अंतिम सिंक: 6 घंटे पहले",
+    "feelingToday": "आज आप कैसा महसूस कर रहे हैं?",
+    "feelingTodayEnglish": "आज आप कैसा महसूस कर रहे हैं?",
+    "tellSymptoms": "अपने लक्षण बताएं",
+    "speakSymptoms": "अपने लक्षण हिंदी में बताएं",
+    "nearestPHC": "नजदीकी PHC",
+    "findNearestClinic": "नजदीकी क्लिनिक खोजें",
+    "photoCheck": "फ़ोटो से जाँच",
+    "photoDiagnosis": "फ़ोटो से जाँच",
+    "rashWound": "रैश, घाव",
+    "wardAlert": "वार्ड 3 में सतर्कता",
+    "dengueCluster": "डेंगू के संभावित मामले — 48 घंटे में 5 मामले",
+    "lastCheck": "पिछली जाँच",
+    "feverHeadache": "बुखार और सिरदर्द",
+    "feverHeadacheAgo": "बुखार और सिरदर्द — 2 दिन पहले",
+    "restAtHome": "घर पर आराम करें"
+  },
+  "symptoms": {
+  "title": "लक्षण बताएं",
+  "analyzing": "विश्लेषण हो रहा है...",
+  "analyzingEnglish": "लक्षणों का विश्लेषण हो रहा है...",
+  "speakSymptoms": "अपने लक्षण बताएं",
+  "checking": "जाँच हो रही है",
+  "ruleBasedTriage": "नियम-आधारित जाँच — इंटरनेट की आवश्यकता नहीं",
+  "fever": "बुखार",
+  "headache": "सिरदर्द",
+  "nausea": "मतली",
+  "tapAndSpeak": "दबाएं और बोलें",
+  "listening": "सुन रहा हूँ...",
+  "tapMic": "बोलना शुरू करने के लिए माइक दबाएं",
+  "tapAgain": "रिकॉर्डिंग रोकने के लिए फिर से दबाएं",
+  "transcribing": "ट्रांसक्राइब हो रहा है — हिंदी",
+  "addPhoto": "फ़ोटो भी जोड़ें",
+  "addPhotoDescription": "रैश, घाव या आँख की फ़ोटो जोड़ें",
+  "transcriptSteps": [
+    "",
+    "मुझे...",
+    "मुझे तीन दिन से...",
+    "मुझे तीन दिन से बुखार है,",
+    "मुझे तीन दिन से बुखार है, सिर में दर्द है",
+    "मुझे तीन दिन से बुखार है, सिर में दर्द है और उल्टी जैसा लग रहा है।"
+  ]
+},
+"triage": {
+  "homeLevel": "घर पर उपचार करें",
+  "homeLevelEn": "घर पर उपचार",
+  "homeBadge": "कोई आपात स्थिति नहीं",
+  "homeTitle": "घर पर यह करें",
+
+  "homeStep1": "पर्याप्त पानी और ORS घोल पीएं",
+  "homeStep1En": "पानी और ORS घोल बार-बार पिएं",
+  "homeStep2": "बुखार के लिए पैरासिटामोल 500mg लें",
+  "homeStep2En": "बुखार के लिए पैरासिटामोल 500mg लें",
+  "homeStep3": "2-3 दिन आराम करें और बाहर न जाएं",
+  "homeStep3En": "2-3 दिन आराम करें, बाहर जाने से बचें",
+  "homeStep4": "3 दिन में ठीक न हो तो PHC जाएं",
+  "homeStep4En": "3 दिन में सुधार न होने पर PHC जाएं",
+
+  "phcLevel": "PHC जाएं",
+  "phcLevelEn": "आज PHC जाएं",
+  "phcBadge": "डॉक्टर से परामर्श जरूरी",
+  "phcTitle": "24 घंटे के अंदर डॉक्टर से मिलें",
+
+  "phcStep1": "नजदीकी PHC में आज जाएं",
+  "phcStep1En": "आज नजदीकी PHC जाएं",
+  "phcStep2": "यह ऐप की स्क्रीन डॉक्टर को दिखाएं",
+  "phcStep2En": "यह स्क्रीन डॉक्टर को दिखाएं",
+  "phcStep3": "अपनी दवाएं और स्वास्थ्य कार्ड साथ लाएं",
+  "phcStep3En": "अपनी मौजूदा दवाएं और स्वास्थ्य कार्ड साथ लाएं",
+  "phcStep4": "खाना खाकर जाएं",
+  "phcStep4En": "जाने से पहले खाना खाएं",
+
+  "urgentLevel": "तुरंत अस्पताल जाएं",
+  "urgentLevelEn": "आपातकाल — अभी जाएं",
+  "urgentBadge": "⚡ आपातकाल — अभी जाएं",
+  "urgentTitle": "यह आपात स्थिति हो सकती है",
+
+  "urgentStep1": "अभी जिला अस्पताल बैतूल जाएं",
+  "urgentStep1En": "तुरंत जिला अस्पताल बैतूल जाएं",
+  "urgentStep2": "किसी परिवार के सदस्य को साथ ले जाएं",
+  "urgentStep2En": "अपने साथ परिवार के किसी सदस्य को ले जाएं",
+  "urgentStep3": "अपनी ASHA कार्यकर्ता को अभी फोन करें",
+  "urgentStep3En": "अभी अपनी ASHA कार्यकर्ता को फोन करें",
+  "urgentStep4": "108 एम्बुलेंस बुलाएं — मुफ़्त है",
+  "urgentStep4En": "मुफ़्त एम्बुलेंस सेवा के लिए 108 पर कॉल करें",
+
+  "homeButton": "होम",
+  "phcButton": "PHC",
+  "urgentButton": "आपातकाल",
+
+  "detectedSymptoms": "आपके लक्षण • पाए गए लक्षण",
+  "symptomSentence": "मुझे तीन दिन से बुखार है, सिर में दर्द है और उल्टी जैसा लग रहा है।",
+  "fever": "बुखार 3 दिन",
+  "headache": "सिरदर्द",
+  "nausea": "मतली",
+
+  "nearestPHC": "नजदीकी PHC देखें",
+  "nearestPHCInfo": "नजदीकी: रामपुर PHC — 2.3 किमी • डॉ. प्रिया शर्मा उपलब्ध",
+  "backHome": "होम पर वापस जाएं",
+  "disclaimer": "यह सलाह नियम-आधारित प्रणाली पर आधारित है। संदेह होने पर हमेशा डॉक्टर से परामर्श करें।"
+},
+"phcLocator": {
+  "back": "वापस",
+  "title": "नजदीकी स्वास्थ्य केंद्र",
+  "subtitle": "नजदीकी स्वास्थ्य सुविधाएं",
+  "location": "रामपुर, बैतूल जिला",
+  "gps": "GPS: 21.91°N 77.90°E • अभी अपडेट किया गया",
+
+  "all": "सभी",
+  "phc": "PHC",
+  "chc": "CHC",
+  "districtHospital": "जिला अस्पताल",
+
+  "open": "खुला है",
+  "closed": "बंद है",
+  "km": "किमी",
+  "until": "तक",
+
+  "hideActions": "विकल्प छिपाएं ↑",
+  "tapActions": "विकल्प देखने के लिए टैप करें ↓",
+
+  "call": "फ़ोन करें",
+  "directions": "रास्ता देखें",
+
+  "offlineNote": "यह सूची ऑफ़लाइन भी काम करती है। स्वास्थ्य केंद्रों की सूची ऑफ़लाइन उपयोग के लिए सेव है।"
+},
+"roleSelect": {
+  "appName": "स्वास्थ्य सहायक",
+  "appNameEnglish": "Swasthya Sahayak",
+
+  "question": "आप कौन हैं?",
+  "selectRole": "जारी रखने के लिए अपनी भूमिका चुनें",
+
+  "roles": {
+    "villager": {
+      "title": "गाँव के लोग",
+      "subtitle": "ग्रामीण",
+      "description": "लक्षण बताएं, नजदीकी PHC खोजें",
+      "descriptionEnglish": "लक्षण बताएं, नजदीकी क्लिनिक खोजें"
+    },
+    "asha": {
+      "title": "ASHA कार्यकर्ता",
+      "subtitle": "ASHA कार्यकर्ता",
+      "description": "घर भेंट लॉग करें, रिपोर्ट बनाएं",
+      "descriptionEnglish": "भेंट लॉग करें, PHC रिपोर्ट बनाएं"
+    },
+    "admin": {
+      "title": "PHC प्रशासक",
+      "subtitle": "PHC एडमिन",
+      "description": "डॉक्टरों की उपलब्धता प्रबंधित करें",
+      "descriptionEnglish": "डॉक्टरों की उपलब्धता और रेफरल प्रबंधित करें"
+    }
+  },
+
+  "offlineTitle": "ऑफ़लाइन मोड उपलब्ध",
+  "offlineDescription": "इंटरनेट के बिना भी काम करता है — कनेक्शन होने पर डेटा अपने आप सिंक होता है",
+
+  "footerOrganization": "राष्ट्रीय स्वास्थ्य मिशन, भारत सरकार",
+  "footerSecurity": "सभी डेटा आपके फ़ोन पर सुरक्षित रहता है"
+},
+
+  "outbreakAlert": {
+    "back": "वापस",
+    "alert": "प्रकोप अलर्ट",
+    "title": "संभावित डेंगू क्लस्टर",
+    "subtitle": "संभावित डेंगू क्लस्टर — वार्ड 3",
+
+    "stats": {
+      "cases": "मामले\nकेस",
+      "period": "अवधि\nपीरियड",
+      "location": "स्थान\nलोकेशन"
+    },
+
+    "alertSent": "PHC रामपुर को अलर्ट भेजा गया",
+    "alertDelivered": "अलर्ट PHC रामपुर को भेजा गया · 16 अगस्त, सुबह 07:50",
+
+    "confirmedTitle": "प्रकोप की पुष्टि हो गई",
+    "confirmedDescription": "प्रकोप की पुष्टि — जिला स्वास्थ्य कार्यालय को सूचित किया गया",
+
+    "investigatingTitle": "जाँच शुरू हो गई",
+    "investigatingDescription": "जाँच जारी है",
+
+    "commonSymptoms": "सामान्य लक्षण",
+    "caseList": "मामलों की सूची",
+
+    "confirmButton": "प्रकोप की पुष्टि करें",
+    "confirmedButton": "पुष्टि हो गई — रिपोर्ट भेजी गई",
+
+    "investigationButton": "जाँच शुरू करें",
+    "investigationProgress": "जाँच जारी है",
+
+    "dismissButton": "अलर्ट खारिज करें",
+
+    "autoReportTitle": "स्वत: रिपोर्ट",
+    "autoReportDescription": "पुष्टि और कनेक्शन होने पर जिला स्वास्थ्य अधिकारी को स्वतः रिपोर्ट भेजी जाएगी।"
+  }
+
+ 
+}

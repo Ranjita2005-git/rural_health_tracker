@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNav } from '../../context/NavContext'
 import { facilities } from '../../data'
 import type { Facility } from '../../types'
+import { useTranslation } from 'react-i18next'
 
 type Filter = 'all' | 'PHC' | 'CHC' | 'District Hospital'
 
@@ -13,6 +14,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export default function PHCLocator() {
   const { goBack } = useNav()
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<string | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -27,15 +29,19 @@ export default function PHCLocator() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back
+          {t('phcLocator.back')}
         </button>
-        <h2 className="devanagari text-2xl font-bold">नजदीकी स्वास्थ्य केंद्र</h2>
-        <p className="text-green-300 text-sm">Nearest Health Facilities</p>
+        <h2 className="devanagari text-2xl font-bold">{t('phcLocator.title')}</h2>
+        <p className="text-green-300 text-sm">{t('phcLocator.subtitle')}</p>
         <div className="mt-3 bg-white/10 rounded-xl px-3 py-2.5 flex items-center gap-2 border border-white/10">
           <span className="text-xl">📍</span>
           <div>
-            <p className="devanagari text-white text-sm font-semibold">रामपुर, बैतूल जिला</p>
-            <p className="text-green-400 text-xs">GPS: 21.91°N 77.90°E • Updated now</p>
+           <p className="devanagari text-white text-sm font-semibold">
+              {t('phcLocator.location')}
+          </p>
+          <p className="text-green-400 text-xs">
+              {t('phcLocator.gps')}
+          </p>
           </div>
           <div className="ml-auto w-2 h-2 bg-green-400 rounded-full animate-pulse" />
         </div>
@@ -53,7 +59,13 @@ export default function PHCLocator() {
                 : 'bg-white text-zinc-500 border border-zinc-200'
             }`}
           >
-            {f === 'all' ? 'सभी / All' : f}
+            {f === 'all'
+              ? t('phcLocator.all')
+              : f === 'PHC'
+              ? t('phcLocator.phc')
+              : f === 'CHC'
+              ? t('phcLocator.chc')
+              : t('phcLocator.districtHospital')}
           </button>
         ))}
       </div>
@@ -82,7 +94,9 @@ export default function PHCLocator() {
                           : 'bg-red-100 text-red-600'
                       }`}
                     >
-                      {facility.isOpen ? '● OPEN' : '● CLOSED'}
+                      {facility.isOpen
+                        ? `● ${t('phcLocator.open')}`
+                        : `● ${t('phcLocator.closed')}`}
                     </span>
                   </div>
                   <p className="devanagari font-bold text-zinc-800 text-base leading-tight">{facility.nameHi}</p>
@@ -90,7 +104,7 @@ export default function PHCLocator() {
                 </div>
                 <div className="text-right ml-4 flex-shrink-0">
                   <p className="text-forest font-black text-2xl leading-none">{facility.distance}</p>
-                  <p className="text-zinc-400 text-xs">km</p>
+                  <p className="text-zinc-400 text-xs">{t('phcLocator.km')}</p>
                 </div>
               </div>
 
@@ -109,7 +123,7 @@ export default function PHCLocator() {
                     <span className="text-zinc-300">•</span>
                     <span className="devanagari text-zinc-400 text-xs flex-1">{doc.specializationHi}</span>
                     {doc.isAvailable && doc.availableUntil && (
-                      <span className="text-emerald-600 text-[10px] font-semibold">until {doc.availableUntil}</span>
+                      <span className="text-emerald-600 text-[10px] font-semibold">{t('phcLocator.until')} {doc.availableUntil}</span>
                     )}
                   </div>
                 ))}
@@ -118,7 +132,9 @@ export default function PHCLocator() {
               <div className="mt-2.5 flex items-center justify-between">
                 <p className="text-zinc-300 text-xs">{facility.phone}</p>
                 <p className={`text-xs font-medium ${selected === facility.id ? 'text-forest' : 'text-zinc-300'}`}>
-                  {selected === facility.id ? 'Hide actions ↑' : 'Tap for actions ↓'}
+                  {selected === facility.id
+                    ? t('phcLocator.hideActions')
+                    : t('phcLocator.tapActions')}
                 </p>
               </div>
             </button>
@@ -130,10 +146,10 @@ export default function PHCLocator() {
                   href={`tel:${facility.phone}`}
                   className="flex-1 bg-forest text-white rounded-xl py-3 text-center text-sm font-bold devanagari hover:bg-forest-dark active:scale-[0.97] transition-all"
                 >
-                  📞 फ़ोन करें
+                  📞 {t('phcLocator.call')}
                 </a>
                 <button className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-sm font-bold devanagari hover:bg-blue-700 active:scale-[0.97] transition-all">
-                  🗺️ रास्ता देखें
+                  🗺️ {t('phcLocator.directions')}
                 </button>
               </div>
             )}
@@ -146,7 +162,7 @@ export default function PHCLocator() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-start gap-2">
           <span>📴</span>
           <p className="text-amber-700 text-xs devanagari">
-            यह सूची ऑफ़लाइन भी काम करती है। Facility list is cached for offline use.
+            {t('phcLocator.offlineNote')}
           </p>
         </div>
       </div>

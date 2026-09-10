@@ -1,0 +1,232 @@
+{
+  "common": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "offline": "OFFLINE",
+    "away": "away",
+    "alert": "ALERT",
+    "back": "Back"
+  
+  },
+  "language": {
+    "title": "Language",
+    "english": "English",
+    "marathi": "मराठी",
+    "hindi": "हिन्दी",
+    "bengali": "বাংলা"
+  },
+
+  "dashboard": {
+    "welcome": "Welcome",
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "healthRecords": "Health Records"
+  },
+
+  "villager": {
+    "greeting": "Hello",
+    "lastSync": "Last sync: 6h ago",
+    "feelingToday": "How are you feeling today?",
+    "feelingTodayEnglish": "How are you feeling today?",
+    "tellSymptoms": "Tell us your symptoms",
+    "speakSymptoms": "Speak your symptoms in Hindi",
+    "nearestPHC": "Nearest PHC",
+    "findNearestClinic": "Find nearest clinic",
+    "photoCheck": "Check by photo",
+    "photoDiagnosis": "Photo diagnosis",
+    "rashWound": "Rash, wound",
+    "wardAlert": "Alert in Ward 3",
+    "dengueCluster": "Possible dengue cluster — 5 cases / 48h",
+    "lastCheck": "Last Check",
+    "feverHeadache": "Fever and headache",
+    "feverHeadacheAgo": "Fever & headache — 2 days ago",
+    "restAtHome": "Rest at home",
+    "villageName": "Rampur Village",
+    "district": "Betul District, Madhya Pradesh"
+  },
+  "symptoms": {
+  "title": "Tell your symptoms",
+  "analyzing": "Analyzing...",
+  "analyzingEnglish": "Analyzing symptoms...",
+  "speakSymptoms": "Speak your symptoms",
+  "checking": "Checking your symptoms",
+  "ruleBasedTriage": "Rule-based triage — no internet needed",
+  "fever": "Fever",
+  "headache": "Headache",
+  "nausea": "Nausea",
+  "tapAndSpeak": "Tap and speak",
+  "listening": "Listening...",
+  "tapMic": "Tap the mic to start speaking",
+  "tapAgain": "Tap again to stop recording",
+  "transcribing": "TRANSCRIBING — HINDI",
+  "addPhoto": "Add a photo too",
+  "addPhotoDescription": "Add photo of rash, wound, or eye",
+  "transcriptSteps": [
+    "",
+    "मुझे...",
+    "मुझे तीन दिन से...",
+    "मुझे तीन दिन से बुखार है,",
+    "मुझे तीन दिन से बुखार है, सिर में दर्द है",
+    "मुझे तीन दिन से बुखार है, सिर में दर्द है और उल्टी जैसा लग रहा है।"
+  ]
+},
+"triage": {
+  "homeLevel": "Home Care",
+  "homeLevelEn": "Home Care",
+  "homeBadge": "No Emergency",
+  "homeTitle": "What to do at home",
+
+  "homeStep1": "Drink enough water and ORS solution",
+  "homeStep1En": "Drink water and ORS solution frequently",
+  "homeStep2": "Take paracetamol 500mg for fever",
+  "homeStep2En": "Take paracetamol 500mg for fever",
+  "homeStep3": "Rest for 2-3 days and avoid going outside",
+  "homeStep3En": "Rest for 2-3 days, avoid going out",
+  "homeStep4": "Visit PHC if you do not improve in 3 days",
+  "homeStep4En": "If no improvement in 3 days, visit PHC",
+
+  "phcLevel": "Visit PHC",
+  "phcLevelEn": "Visit PHC Today",
+  "phcBadge": "Doctor consultation required",
+  "phcTitle": "See a doctor within 24 hours",
+
+  "phcStep1": "Visit the nearest PHC today",
+  "phcStep1En": "Visit the nearest PHC today",
+  "phcStep2": "Show this app screen to the doctor",
+  "phcStep2En": "Show this screen to the doctor",
+  "phcStep3": "Bring your medicines and health card",
+  "phcStep3En": "Bring your existing medicines and health card",
+  "phcStep4": "Eat before you go",
+  "phcStep4En": "Eat before you go",
+
+  "urgentLevel": "Go to hospital immediately",
+  "urgentLevelEn": "Emergency — Go Now",
+  "urgentBadge": "⚡ Emergency — Go now",
+  "urgentTitle": "This may be an emergency",
+
+  "urgentStep1": "Go to District Hospital Betul immediately",
+  "urgentStep1En": "Go to District Hospital Betul immediately",
+  "urgentStep2": "Take a family member with you",
+  "urgentStep2En": "Take a family member with you",
+  "urgentStep3": "Call your ASHA worker now",
+  "urgentStep3En": "Call your ASHA worker now",
+  "urgentStep4": "Call 108 for free ambulance service",
+  "urgentStep4En": "Call 108 for free ambulance service",
+
+  "homeButton": "Home",
+  "phcButton": "PHC",
+  "urgentButton": "Urgent",
+
+  "detectedSymptoms": "Your symptoms • Detected Symptoms",
+  "symptomSentence": "I have had fever for three days, headache, and I feel like vomiting.",
+  "fever": "Fever 3 days",
+  "headache": "Headache",
+  "nausea": "Nausea",
+
+  "nearestPHC": "View nearest PHC",
+  "nearestPHCInfo": "Nearest: Rampur PHC — 2.3 km • Dr. Priya Sharma available",
+  "backHome": "Go back home",
+  "disclaimer": "This advice is based on a rule-based system. When in doubt, always consult a doctor."
+},
+"phcLocator": {
+  "back": "Back",
+  "title": "Nearest Health Facilities",
+  "subtitle": "Nearest Health Facilities",
+  "location": "Rampur, Betul District",
+  "gps": "GPS: 21.91°N 77.90°E • Updated now",
+
+  "all": "All",
+  "phc": "PHC",
+  "chc": "CHC",
+  "districtHospital": "District Hospital",
+
+  "open": "OPEN",
+  "closed": "CLOSED",
+  "km": "km",
+  "until": "until",
+
+  "hideActions": "Hide actions ↑",
+  "tapActions": "Tap for actions ↓",
+
+  "call": "Call",
+  "directions": "View directions",
+
+  "offlineNote": "This list also works offline. Facility list is cached for offline use."
+},
+"roleSelect": {
+  "appName": "Health Assistant",
+  "appNameEnglish": "Swasthya Sahayak",
+
+  "question": "Who are you?",
+  "selectRole": "Select your role to continue",
+
+  "roles": {
+    "villager": {
+      "title": "Villagers",
+      "subtitle": "Villager",
+      "description": "Describe symptoms, find nearby PHC",
+      "descriptionEnglish": "Describe symptoms, find nearby clinic"
+    },
+    "asha": {
+      "title": "ASHA Worker",
+      "subtitle": "ASHA Worker",
+      "description": "Log home visits, generate reports",
+      "descriptionEnglish": "Log visits, generate PHC reports"
+    },
+    "admin": {
+      "title": "PHC Administrator",
+      "subtitle": "PHC Admin",
+      "description": "Manage doctor availability",
+      "descriptionEnglish": "Manage doctor availability & referrals"
+    }
+  },
+
+  "offlineTitle": "Offline mode available",
+  "offlineDescription": "Works without internet — data syncs automatically when connected",
+
+  "footerOrganization": "National Health Mission, Government of India",
+  "footerSecurity": "All data is securely stored on your phone"
+},
+
+  "outbreakAlert": {
+    "back": "Back",
+    "alert": "OUTBREAK ALERT",
+    "title": "Possible Dengue Cluster",
+    "subtitle": "Possible Dengue Cluster — Ward 3",
+
+    "stats": {
+      "cases": "मामले\nCases",
+      "period": "अवधि\nPeriod",
+      "location": "स्थान\nLocation"
+    },
+
+    "alertSent": "Alert sent to PHC Rampur",
+    "alertDelivered": "Alert delivered to PHC Rampur · 16 Aug, 07:50 AM",
+
+    "confirmedTitle": "Outbreak confirmed",
+    "confirmedDescription": "Outbreak confirmed — district health office notified",
+
+    "investigatingTitle": "Investigation started",
+    "investigatingDescription": "Investigation in progress",
+
+    "commonSymptoms": "Common Symptoms",
+    "caseList": "Case List",
+
+    "confirmButton": "Confirm Outbreak",
+    "confirmedButton": "Confirmed & Reported",
+
+    "investigationButton": "Start Investigation",
+    "investigationProgress": "Investigation in progress",
+
+    "dismissButton": "Dismiss Alert",
+
+    "autoReportTitle": "Auto-report",
+    "autoReportDescription": "Auto-report will be sent to District Health Officer when confirmed and connected."
+  }
+
+}
