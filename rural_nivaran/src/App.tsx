@@ -10,6 +10,7 @@ import ASHADashboard from './screens/asha/ASHADashboard'
 import LogVisit from './screens/asha/LogVisit'
 import PHCAdmin from './screens/admin/PHCAdmin'
 import OutbreakAlert from './screens/OutbreakAlert'
+import AIChatbot from './screens/villager/AIChatbot'
 
 function AppRouter() {
   const { screen } = useNav()
@@ -26,6 +27,9 @@ function AppRouter() {
       {screen === 'log-visit' && <LogVisit />}
       {screen === 'admin-dashboard' && <PHCAdmin />}
       {screen === 'outbreak-alert' && <OutbreakAlert />}
+      {screen === 'ai-chatbot' && <AIChatbot />}
+      
+
     </MobileShell>
   )
 }

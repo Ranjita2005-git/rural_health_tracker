@@ -224,6 +224,7 @@ export default function SymptomInput() {
         </div>
 
       )}
+      
 
 
       {/* Language selector & photo option */}

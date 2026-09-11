@@ -40,12 +40,15 @@ export default function RoleSelect() {
     screen: 'villager-home' | 'asha-dashboard' | 'admin-dashboard'
   ) => {
     setRole(role)
-     // Only villagers choose a language
+    // Villagers choose language first, then go straight to home (no login)
     if (role === 'villager') {
       setShowLanguageSelect(true)
       return
     }
-    navigate(screen)
+    // ASHA workers and admins authenticate against the backend
+    const pendingRole = role === 'admin' ? 'admin' : 'asha'
+    sessionStorage.setItem('rn_pending_role', pendingRole)
+    navigate('login')
   }
 const handleLanguageSelect = async (language: string) => {
   await i18n.changeLanguage(language)

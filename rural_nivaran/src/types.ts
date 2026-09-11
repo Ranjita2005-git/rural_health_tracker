@@ -11,6 +11,7 @@ export type Screen =
   | 'log-visit'
   | 'admin-dashboard'
   | 'outbreak-alert'
+  | 'ai-chatbot'
 
 export interface Doctor {
   id: string

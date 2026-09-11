@@ -1,9 +1,24 @@
+import { useState, useEffect } from 'react'
 import { useNav } from '../../context/NavContext'
 import { useTranslation } from 'react-i18next';
+import { API_BASE } from '../../services/api'
+
 
 export default function VillagerHome() {
   const { navigate } = useNav()
   const { t } = useTranslation();
+
+  // Ping the backend health-check endpoint once on mount to determine
+  // whether the server is reachable (determines LIVE vs OFFLINE badge).
+  const [serverOnline, setServerOnline] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(`${API_BASE}/`, { signal: controller.signal })
+      .then(r => setServerOnline(r.ok))
+      .catch(() => setServerOnline(false))
+    return () => controller.abort()
+  }, [])
 
   return (
     <div className="min-h-full bg-cream overflow-y-auto">
@@ -27,11 +42,19 @@ export default function VillagerHome() {
           </div>
 
           <div className="flex flex-col items-end gap-1.5">
-
+            {serverOnline === null ? (
+              <div className="bg-zinc-400/60 text-white text-[10px] font-black px-2.5 py-1 rounded-full">
+                ● Checking...
+              </div>
+            ) : serverOnline ? (
+              <div className="bg-green-400 text-green-900 text-[10px] font-black px-2.5 py-1 rounded-full">
+                ● LIVE
+              </div>
+            ) : (
             <div className="bg-amber-400 text-amber-900 text-[10px] font-black px-2.5 py-1 rounded-full">
               ● {t('common.offline')}
             </div>
-
+            )}
             <p className="text-green-400 text-[10px]">
               {t('villager.lastSync')}
             </p>
@@ -42,7 +65,7 @@ export default function VillagerHome() {
         <div className="bg-white/10 border border-white/15 rounded-xl px-3 py-2 mt-2">
 
           <p className="devanagari text-green-100 text-sm">
-            {t('villager.feelingToday')}
+            {serverOnline ? 'Server connected' : t('villager.lastSync')}
           </p>
 
           <p className="text-green-400 text-xs">

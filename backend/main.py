@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
-import authRouter, facilitiesRouter, doctorsRouter, availabilityRouter
+import authRouter, facilitiesRouter, doctorsRouter, availabilityRouter,chatRouter
 
 # Creates tables if they don't exist yet. For production, prefer Alembic
 # migrations instead (see README) so schema changes are versioned.
@@ -23,8 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
+        "http://localhost:8443",
+        "http://127.0.0.1:8443"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -35,7 +35,7 @@ app.include_router(authRouter.router)
 app.include_router(facilitiesRouter.router)
 app.include_router(doctorsRouter.router)
 app.include_router(availabilityRouter.router)
-
+app.include_router(chatRouter.router)
 
 @app.get("/", tags=["Health Check"])
 def root():

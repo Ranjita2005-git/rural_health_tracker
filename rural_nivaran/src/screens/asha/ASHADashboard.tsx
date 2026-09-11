@@ -1,11 +1,47 @@
+import { useState, useEffect } from 'react'
 import { useNav } from '../../context/NavContext'
+import { useAuth } from '../../context/AuthContext'
 import { households } from '../../data'
+import {
+  getNearbyAvailability,
+  type ApiFacilityAvailabilitySummary,
+} from '../../services/api'
+import { getCurrentLocation } from '../../services/locationService'
 
 export default function ASHADashboard() {
   const { navigate } = useNav()
+  const { user, signOut } = useAuth()
 
   const highRisk = households.filter((h) => h.riskLevel === 'high')
+  const [availability, setAvailability] = useState<ApiFacilityAvailabilitySummary[]>([])
+  const [loadingAvail, setLoadingAvail] = useState(false)
+  const [liveMode, setLiveMode] = useState(false)
 
+  // Fetch nearby doctor availability on mount if location is accessible
+  useEffect(() => {
+    let cancelled = false
+    setLoadingAvail(true)
+
+    getCurrentLocation()
+      .then(async (loc) => {
+        if (cancelled) return
+        const data = await getNearbyAvailability(loc.latitude, loc.longitude, 50)
+        if (!cancelled && data && data.length > 0) {
+          setAvailability(data)
+          setLiveMode(true)
+        }
+      })
+      .catch(() => { /* location denied — stay in static mode */ })
+      .finally(() => { if (!cancelled) setLoadingAvail(false) })
+
+    return () => { cancelled = true }
+  }, [])
+
+  // Count doctors available across all nearby facilities
+  const totalAvailableDoctors = availability.reduce(
+    (sum, fac) => sum + fac.doctors.filter(d => d.status === 'available').length,
+    0
+  )
   return (
     <div className="min-h-full bg-cream overflow-y-auto">
 
@@ -19,16 +55,24 @@ export default function ASHADashboard() {
             </p>
 
             <h1 className="text-2xl font-bold">
-              Mamta Devi
+              {user?.name ?? 'ASHA Worker'}
             </h1>
 
             <p className="text-orange-300 text-xs">
-              Rampur Sector, Betul
+              {user ? `+91 ${user.phoneNumber}` : 'Rampur Sector, Betul'} 
             </p>
           </div>
 
-          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl border border-white/25">
-            👩
+           <div className="flex flex-col items-end gap-2">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl border border-white/25">
+              👩
+            </div>
+            <button
+              onClick={signOut}
+              className="text-orange-300 text-[10px] font-semibold hover:text-white transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
 
         </div>
@@ -97,6 +141,68 @@ export default function ASHADashboard() {
         </div>
 
       </div>
+      
+      {/* ================= NEARBY DOCTOR AVAILABILITY ================= */}
+      {(liveMode || loadingAvail) && (
+        <div className="px-5 mt-3">
+          <div className="bg-white rounded-xl border border-cream-dark overflow-hidden">
+
+            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${liveMode ? 'bg-green-500 animate-pulse' : 'bg-zinc-300'}`} />
+                <h3 className="font-bold text-zinc-800 text-sm">Nearby Doctor Availability</h3>
+              </div>
+              {liveMode && (
+                <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  LIVE · {totalAvailableDoctors} available
+                </span>
+              )}
+            </div>
+
+            {loadingAvail && !liveMode ? (
+              <div className="px-4 py-3 flex items-center gap-2 text-zinc-400 text-sm">
+                <div className="w-4 h-4 border-2 border-zinc-300 border-t-terra rounded-full animate-spin" />
+                Fetching live data...
+              </div>
+            ) : (
+              <div className="divide-y divide-zinc-100">
+                {availability.slice(0, 5).map(fac => (
+                  <div key={fac.facility_id} className="px-4 py-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-zinc-800 text-sm truncate">{fac.facility_name}</p>
+                        <p className="text-zinc-400 text-xs">{fac.facility_type.toUpperCase()} · {fac.distance_km} km</p>
+                      </div>
+                      <div className={`flex-shrink-0 ml-3 text-xs font-bold px-2.5 py-1 rounded-full ${
+                        fac.has_available_doctor
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-zinc-100 text-zinc-500'
+                      }`}>
+                        {fac.has_available_doctor ? '● Available' : '○ Unavailable'}
+                      </div>
+                    </div>
+
+                    {fac.doctors.filter(d => d.status === 'available').map(doc => (
+                      <div key={doc.doctor_id} className="mt-1 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                        <span className="text-zinc-600 text-xs">{doc.doctor_name}</span>
+                        <span className="text-zinc-300 text-xs">·</span>
+                        <span className="text-zinc-400 text-xs">{doc.specialization}</span>
+                        {doc.expected_departure_time && (
+                          <span className="text-emerald-600 text-[10px] font-semibold ml-auto">
+                            until {doc.expected_departure_time}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
 
       {/* ================= OUTBREAK ALERT ================= */}

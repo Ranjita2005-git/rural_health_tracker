@@ -1,7 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNav } from '../../context/NavContext'
+import { useAuth } from '../../context/AuthContext'
 import { facilities } from '../../data'
 import type { Doctor } from '../../types'
+import {
+  getFacilityAvailability,
+  patchDoctorStatus,
+  createDoctor,
+  setDoctorAvailability,
+  getDoctorsForFacility,
+  type ApiDoctorAvailability,
+  type ApiDoctor,
+} from '../../services/api'
 
 type Tab = 'doctors' | 'referrals' | 'stats'
 
@@ -59,10 +69,151 @@ const STATS = [
   },
 ]
 
+
+
+interface AddDoctorModalProps {
+  facilityId: string
+  onClose: () => void
+  onCreated: (doc: Doctor) => void
+}
+
+function AddDoctorModal({ facilityId, onClose, onCreated }: AddDoctorModalProps) {
+  const [form, setForm] = useState({
+    name: '',
+    specialization: 'General Physician',
+    phone: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      setError('Doctor name is required.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+
+    const result = await createDoctor({
+      name: form.name.trim(),
+      specialization: form.specialization.trim() || 'General Physician',
+      facility_id: facilityId,
+      phone_number: form.phone.trim() || undefined,
+    })
+
+    if (!result) {
+      setError('Failed to create doctor. Check your connection or permissions.')
+      setSaving(false)
+      return
+    }
+
+    // Immediately mark them available for today
+    await setDoctorAvailability({
+      doctor_id: result.id,
+      status: 'available',
+    })
+
+    // Map ApiDoctor → frontend Doctor type
+    const frontendDoc: Doctor = {
+      id: result.id,
+      name: result.name,
+      nameHi: result.name,
+      specialization: result.specialization,
+      specializationHi: result.specialization,
+      isAvailable: true,
+    }
+
+    onCreated(frontendDoc)
+    setSaving(false)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+      <div className="w-full max-w-md bg-white rounded-t-3xl p-5 shadow-2xl">
+
+        <div className="w-12 h-1.5 bg-zinc-200 rounded-full mx-auto mb-5" />
+
+        <h2 className="text-lg font-bold text-zinc-800 mb-4">Add Doctor to Roster</h2>
+
+        <div className="flex flex-col gap-3">
+
+          <div>
+            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block uppercase tracking-wide">
+              Doctor Name *
+            </label>
+            <input
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              placeholder="e.g. Dr. Priya Sharma"
+              className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block uppercase tracking-wide">
+              Specialization
+            </label>
+            <input
+              value={form.specialization}
+              onChange={e => setForm(p => ({ ...p, specialization: e.target.value }))}
+              placeholder="General Physician"
+              className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block uppercase tracking-wide">
+              Phone Number (optional)
+            </label>
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+              placeholder="e.g. 9876543210"
+              className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+        </div>
+
+        <div className="flex gap-3 mt-5">
+          <button
+            onClick={onClose}
+            className="flex-1 border border-zinc-200 text-zinc-500 rounded-xl py-3 text-sm font-semibold hover:bg-zinc-50 active:scale-[0.98] transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-sm font-bold hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+          >
+            {saving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : '+ Add & Mark Available'}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 export default function PHCAdmin() {
   const { navigate } = useNav()
+  const { user, signOut } = useAuth()
 
   const phc = facilities[0]
+  const facilityId = user?.facilityId ?? phc.id
 
   const [doctors, setDoctors] = useState<Doctor[]>(
     phc.doctors.map((d) => ({ ...d }))
@@ -83,17 +234,88 @@ export default function PHCAdmin() {
     r3: 'pending',
   })
 
-  const toggleDoc = (id: string) => {
-    setDoctors((prev) =>
-      prev.map((d) =>
-        d.id === id
-          ? {
-              ...d,
-              isAvailable: !d.isAvailable,
-            }
-          : d
-      )
+  // Map of doctor_id → schedule_id for live PATCH calls
+  const [scheduleMap, setScheduleMap] = useState<Record<string, string>>({})
+  const [liveMode, setLiveMode] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+
+  // On mount, try to load live availability for the first facility
+  useEffect(() => {
+    getFacilityAvailability(facilityId).then(schedules => {
+     if (!schedules || schedules.length === 0) {
+        // No live schedules yet — try fetching the doctor roster directly
+        getDoctorsForFacility(facilityId).then((liveDoctors: ApiDoctor[] | null) => {
+          if (!liveDoctors || liveDoctors.length === 0) return
+          setDoctors(liveDoctors.map(d => ({
+            id: d.id,
+            name: d.name,
+            nameHi: d.name,
+            specialization: d.specialization,
+            specializationHi: d.specialization,
+            isAvailable: false,
+          })))
+        })
+        return
+      }
+      setLiveMode(true)
+
+      // Update doctor availability from live schedule
+      const map: Record<string, string> = {}
+      const liveDoctorList: Doctor[] = schedules.map((sched: ApiDoctorAvailability) => {
+        map[sched.doctor_id] = sched.schedule_id
+        return {
+          id: sched.doctor_id,
+          name: sched.doctor_name,
+          nameHi: sched.doctor_name,
+          specialization: sched.specialization,
+          specializationHi: sched.specialization,
+          isAvailable: sched.status === 'available',
+          availableUntil: sched.expected_departure_time
+            ? String(sched.expected_departure_time)
+            : undefined,
+        }
+      })
+      setDoctors(liveDoctorList)
+      setScheduleMap(map)
+    })
+  }, [facilityId])
+
+  const toggleDoc = async (id: string) => {
+    const doc = doctors.find(d => d.id === id)
+    if (!doc) return
+
+    const newAvailable = !doc.isAvailable
+
+    // Optimistic UI update first
+    setDoctors(prev =>
+      prev.map(d => d.id === id ? { ...d, isAvailable: newAvailable } : d)
     )
+
+    // If we have a live schedule, patch it on the server
+    const scheduleId = scheduleMap[id]
+    if (liveMode && scheduleId) {
+      const newStatus = newAvailable ? 'available' : 'off_duty'
+      const result = await patchDoctorStatus(scheduleId, newStatus)
+      if (!result) {
+        // Server rejected — revert
+        setDoctors(prev =>
+          prev.map(d => d.id === id ? { ...d, isAvailable: doc.isAvailable } : d)
+        )
+      }
+    } else if (!scheduleId) {
+      // No schedule yet — create one via setDoctorAvailability
+      const newStatus = newAvailable ? 'available' : 'off_duty'
+      const result = await setDoctorAvailability({ doctor_id: id, status: newStatus })
+      if (result) {
+        setLiveMode(true)
+        setScheduleMap(prev => ({ ...prev, [id]: result.schedule_id }))
+      }
+    }
+  }
+
+  const handleDoctorCreated = (doc: Doctor) => {
+    setDoctors(prev => [...prev, doc])
+    setShowAddModal(false)
   }
 
   return (
@@ -118,18 +340,32 @@ export default function PHCAdmin() {
 
             <p className="text-blue-300 text-xs">
               Admin Dashboard
+              {user?.name ?? 'Admin Dashboard'}
             </p>
           </div>
 
-          <div className="text-right">
+          <div className="flex flex-col items-end gap-1.5">
 
-            <div className="bg-emerald-400 text-emerald-900 text-[10px] font-black px-2.5 py-1 rounded-full mb-1.5">
-              ● OPEN
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-400 text-emerald-900 text-[10px] font-black px-2.5 py-1 rounded-full">
+                ● OPEN
+              </div>
+              {liveMode && (
+                <div className="bg-green-300/30 border border-green-300/50 text-green-100 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                  LIVE
+                </div>
+              )}
             </div>
 
             <p className="text-blue-300 text-xs">
               OPD: 9AM–2PM
             </p>
+            <button
+              onClick={signOut}
+              className="text-blue-300 text-[10px] font-semibold hover:text-white transition-colors"
+            >
+              Sign Out
+            </button>
 
           </div>
 
@@ -269,6 +505,7 @@ export default function PHCAdmin() {
               </h3>
 
               <button
+                onClick={() => setShowAddModal(true)}
                 className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-bold hover:bg-blue-700 active:scale-[0.97] transition-all"
               >
                 + Add Doctor
@@ -630,6 +867,17 @@ export default function PHCAdmin() {
         )}
 
       </div>
+      {/* ========================= */}
+      {/* ADD DOCTOR MODAL */}
+      {/* ========================= */}
+
+      {showAddModal && (
+        <AddDoctorModal
+          facilityId={facilityId}
+          onClose={() => setShowAddModal(false)}
+          onCreated={handleDoctorCreated}
+        />
+      )}
 
     </div>
   )

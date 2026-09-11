@@ -227,6 +227,16 @@
 
     "autoReportTitle": "Auto-report",
     "autoReportDescription": "Auto-report will be sent to District Health Officer when confirmed and connected."
+  },
+   "chatbot": {
+    "title": "AI Health Assistant",
+    "subtitle": "Disease recognition chatbot",
+    "online": "AI ACTIVE",
+    "ctaTitle": "Chat with AI Health Assistant",
+    "ctaSubtitle": "Type symptoms — get instant advice",
+    "disclaimer": "AI advice is for guidance only. Always consult a doctor.",
+    "placeholder": "Describe symptoms... (e.g. fever, cough)",
+    "send": "Send"
   }
 
 }

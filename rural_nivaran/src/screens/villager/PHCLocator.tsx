@@ -1,10 +1,15 @@
-import { thaneFacilities } from '../../data/ThaneFacilities';
+import { thaneFacilities } from '../../data/ThaneFacilities'
+import { facilities as staticFacilities } from '../../data'
 import { useState } from 'react'
 import { useNav } from '../../context/NavContext'
 import {
   getCurrentLocation,
   calculateDistance,
 } from '../../services/locationService'
+import {
+  getNearbyFacilities,
+  type ApiFacility,
+} from '../../services/api'
 import type { Facility } from '../../types'
 
 type Filter = 'all' | 'PHC' | 'CHC' | 'District Hospital'
@@ -13,6 +18,31 @@ const TYPE_COLORS: Record<string, string> = {
   PHC: 'bg-green-100 text-green-700',
   CHC: 'bg-blue-100 text-blue-700',
   'District Hospital': 'bg-purple-100 text-purple-700',
+}
+
+/** Map backend facility_type enum → frontend display string */
+function mapFacilityType(t: string): Facility['type'] {
+  if (t === 'CHC') return 'CHC'
+  if (t === 'district_hospital') return 'District Hospital'
+  return 'PHC'
+}
+
+/** Convert an API facility into the Facility shape the UI expects */
+function apiFacilityToLocal(f: ApiFacility, distanceKm?: number): Facility {
+  return {
+    id: f.id,
+    name: f.name,
+    nameHi: f.name,            // backend doesn't have a Hindi name yet
+    type: mapFacilityType(f.facility_type),
+    distance: distanceKm ?? f.distance_km ?? 0,
+    latitude: f.latitude,
+    longitude: f.longitude,
+    address: f.address ?? '',
+    addressHi: f.address ?? '',
+    phone: f.phone_number ?? '',
+    isOpen: true,              // backend doesn't expose isOpen yet
+    doctors: [],               // fetched separately if needed
+  }
 }
 
 export default function PHCLocator() {
@@ -25,12 +55,10 @@ export default function PHCLocator() {
   } | null>(null)
 
   const [facilitiesWithDistance, setFacilitiesWithDistance] = useState<Facility[]>(thaneFacilities)
-
-  const [nearestFacility, setNearestFacility] =
-    useState<Facility | null>(null)
-
+  const [nearestFacility, setNearestFacility] = useState<Facility | null>(null)
   const [locationLoading, setLocationLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [usingLiveData, setUsingLiveData] = useState(false)
 
   const handleGetLocation = async () => {
     setLocationLoading(true)
@@ -38,49 +66,64 @@ export default function PHCLocator() {
 
     try {
       const location = await getCurrentLocation()
-
       setUserLocation(location)
 
-      const updatedFacilities = thaneFacilities.map((facility) => {
-        const distance = calculateDistance(
-          location.latitude,
-          location.longitude,
-          facility.latitude,
-          facility.longitude
-        )
-
-        return {
-          ...facility,
-          distance: Number(distance.toFixed(2)),
-        }
-      })
-
-      const sortedFacilities = [...updatedFacilities].sort(
-        (a, b) => a.distance - b.distance
+      // ── Try live API first ─────────────────────────────────────────────
+      const apiFacilities = await getNearbyFacilities(
+        location.latitude,
+        location.longitude,
+        50          // 50 km radius
       )
 
-      setFacilitiesWithDistance(sortedFacilities)
+      if (apiFacilities && apiFacilities.length > 0) {
+        // API returned real data — compute distances from our GPS position
+        const mapped = apiFacilities.map(f => {
+          const dist = f.distance_km !== null
+            ? f.distance_km
+            : Number(calculateDistance(
+                location.latitude, location.longitude,
+                f.latitude, f.longitude
+              ).toFixed(2))
+          return apiFacilityToLocal(f, dist)
+        })
+        const sorted = [...mapped].sort((a, b) => a.distance - b.distance)
+        setFacilitiesWithDistance(sorted)
+        setNearestFacility(sorted[0] ?? null)
+        setUsingLiveData(true)
+        return
+      }
 
-      const nearest = sortedFacilities.reduce(
-        (nearest, facility) =>
-          facility.distance < nearest.distance ? facility : nearest
-      )
-
-      setNearestFacility(nearest)
+      // ── Fallback to combined static dataset ───────────────────────────
+      const allStatic = [
+        ...thaneFacilities,
+        ...staticFacilities.filter(f => !thaneFacilities.find(t => t.id === f.id)),
+      ]
+      const updated = allStatic.map(f => ({
+        ...f,
+        distance: Number(
+          calculateDistance(
+            location.latitude, location.longitude,
+            f.latitude, f.longitude
+          ).toFixed(2)
+        ),
+      }))
+      const sorted = [...updated].sort((a, b) => a.distance - b.distance)
+      setFacilitiesWithDistance(sorted)
+      setNearestFacility(sorted[0] ?? null)
+      setUsingLiveData(false)
 
     } catch (error) {
       console.error(error)
-
       setLocationError('Location could not be detected. Please try again.')
-
     } finally {
       setLocationLoading(false)
     }
   }
+
   const filtered: Facility[] =
     filter === 'all'
       ? facilitiesWithDistance
-      : facilitiesWithDistance.filter((f) => f.type === filter)
+      : facilitiesWithDistance.filter(f => f.type === filter)
 
   return (
     <div className="min-h-full bg-cream overflow-y-auto">
@@ -94,27 +137,29 @@ export default function PHCLocator() {
         </button>
         <h2 className="devanagari text-2xl font-bold">नजदीकी स्वास्थ्य केंद्र</h2>
         <p className="text-green-300 text-sm">Nearest Health Facilities</p>
+
+        {/* Live / cached badge */}
+        {usingLiveData && (
+          <div className="mt-2 inline-flex items-center gap-1.5 bg-green-700/50 border border-green-600 rounded-full px-2.5 py-1">
+            <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-green-200 text-[10px] font-bold">LIVE DATA FROM SERVER</span>
+          </div>
+        )}
+
         <div className="mt-3 bg-white/10 rounded-xl px-3 py-3 border border-white/10">
           <div className="flex items-center gap-2">
             <span className="text-xl">📍</span>
-
             <div className="flex-1">
-              <p className="devanagari text-white text-sm font-semibold">
-                आपकी वर्तमान स्थिति
-              </p>
-
+              <p className="devanagari text-white text-sm font-semibold">आपकी वर्तमान स्थिति</p>
               {userLocation ? (
                 <p className="text-green-400 text-xs">
-                  Location detected
+                  {userLocation.latitude.toFixed(4)}°N — Location detected
                 </p>
               ) : (
-                <p className="text-green-300 text-xs">
-                  Location not detected
-                </p>
+                <p className="text-green-300 text-xs">Location not detected</p>
               )}
             </div>
-
-            <div className="w-2 h-2 bg-zinc-400 rounded-full" />
+            <div className={`w-2 h-2 rounded-full ${userLocation ? 'bg-green-400' : 'bg-zinc-400'}`} />
           </div>
 
           <button
@@ -127,10 +172,7 @@ export default function PHCLocator() {
 
           {locationError && (
             <div className="mt-2">
-              <p className="text-red-300 text-xs">
-                ⚠️ {locationError}
-              </p>
-
+              <p className="text-red-300 text-xs">⚠️ {locationError}</p>
               <button
                 onClick={handleGetLocation}
                 disabled={locationLoading}
@@ -143,36 +185,25 @@ export default function PHCLocator() {
         </div>
       </div>
 
-
+      {/* Nearest facility banner */}
       {nearestFacility && (
         <div className="mx-5 mt-4 bg-green-50 border border-green-200 rounded-2xl p-4">
-          <p className="text-green-700 text-xs font-bold mb-1">
-            📍 NEAREST HEALTH FACILITY
-          </p>
-
-          <p className="devanagari text-zinc-800 font-bold text-lg">
-            {nearestFacility.nameHi}
-          </p>
-
-          <p className="text-zinc-500 text-sm">
-            {nearestFacility.name}
-          </p>
-
-          <p className="text-forest font-black text-xl mt-2">
-            {nearestFacility.distance} km away
-          </p>
+          <p className="text-green-700 text-xs font-bold mb-1">📍 NEAREST HEALTH FACILITY</p>
+          <p className="devanagari text-zinc-800 font-bold text-lg">{nearestFacility.nameHi}</p>
+          <p className="text-zinc-500 text-sm">{nearestFacility.name}</p>
+          <p className="text-forest font-black text-xl mt-2">{nearestFacility.distance} km away</p>
         </div>
       )}
+
       {/* Filters */}
       <div className="flex gap-2 px-5 mt-4 overflow-x-auto pb-1">
-        {(['all', 'PHC', 'CHC', 'District Hospital'] as Filter[]).map((f) => (
+        {(['all', 'PHC', 'CHC', 'District Hospital'] as Filter[]).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${filter === f
-              ? 'bg-forest text-white'
-              : 'bg-white text-zinc-500 border border-zinc-200'
-              }`}
+            className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full font-semibold transition-colors ${
+              filter === f ? 'bg-forest text-white' : 'bg-white text-zinc-500 border border-zinc-200'
+            }`}
           >
             {f === 'all' ? 'सभी / All' : f}
           </button>
@@ -181,27 +212,20 @@ export default function PHCLocator() {
 
       {/* Cards */}
       <div className="px-5 mt-3 pb-8 flex flex-col gap-3">
-        {filtered.map((facility) => (
+        {filtered.map(facility => (
           <div key={facility.id}>
             <button
-              onClick={() =>
-                setSelected(selected === facility.id ? null : facility.id)
-              }
+              onClick={() => setSelected(selected === facility.id ? null : facility.id)}
               className="w-full bg-white rounded-2xl border border-cream-dark p-4 text-left hover:shadow-md active:scale-[0.99] transition-all"
             >
               {/* Top row */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[facility.type]}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[facility.type] ?? 'bg-zinc-100 text-zinc-600'}`}>
                       {facility.type}
                     </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${facility.isOpen
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-red-100 text-red-600'
-                        }`}
-                    >
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${facility.isOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
                       {facility.isOpen ? '● OPEN' : '● CLOSED'}
                     </span>
                   </div>
@@ -217,22 +241,21 @@ export default function PHCLocator() {
               <p className="devanagari text-zinc-500 text-xs mb-3 leading-relaxed">{facility.addressHi}</p>
 
               {/* Doctors */}
-              <div className="flex flex-col gap-1.5 border-t border-cream-dark pt-2.5">
-                {facility.doctors.map((doc) => (
-                  <div key={doc.id} className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${doc.isAvailable ? 'bg-emerald-500' : 'bg-zinc-300'
-                        }`}
-                    />
-                    <span className="devanagari text-zinc-700 text-xs font-medium">{doc.nameHi}</span>
-                    <span className="text-zinc-300">•</span>
-                    <span className="devanagari text-zinc-400 text-xs flex-1">{doc.specializationHi}</span>
-                    {doc.isAvailable && doc.availableUntil && (
-                      <span className="text-emerald-600 text-[10px] font-semibold">until {doc.availableUntil}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {facility.doctors.length > 0 && (
+                <div className="flex flex-col gap-1.5 border-t border-cream-dark pt-2.5">
+                  {facility.doctors.map(doc => (
+                    <div key={doc.id} className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${doc.isAvailable ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
+                      <span className="devanagari text-zinc-700 text-xs font-medium">{doc.nameHi}</span>
+                      <span className="text-zinc-300">•</span>
+                      <span className="devanagari text-zinc-400 text-xs flex-1">{doc.specializationHi}</span>
+                      {doc.isAvailable && doc.availableUntil && (
+                        <span className="text-emerald-600 text-[10px] font-semibold">until {doc.availableUntil}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="mt-2.5 flex items-center justify-between">
                 <p className="text-zinc-300 text-xs">{facility.phone}</p>
@@ -251,9 +274,14 @@ export default function PHCLocator() {
                 >
                   📞 फ़ोन करें
                 </a>
-                <button className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-sm font-bold devanagari hover:bg-blue-700 active:scale-[0.97] transition-all">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${facility.latitude},${facility.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 bg-blue-600 text-white rounded-xl py-3 text-center text-sm font-bold devanagari hover:bg-blue-700 active:scale-[0.97] transition-all"
+                >
                   🗺️ रास्ता देखें
-                </button>
+                </a>
               </div>
             )}
           </div>
@@ -265,7 +293,9 @@ export default function PHCLocator() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-start gap-2">
           <span>📴</span>
           <p className="text-amber-700 text-xs devanagari">
-            यह सूची ऑफ़लाइन भी काम करती है। Facility list is cached for offline use.
+            {usingLiveData
+              ? 'Live data from server. Tap "Use My Location" to refresh.'
+              : 'यह सूची ऑफ़लाइन भी काम करती है। Facility list is cached for offline use.'}
           </p>
         </div>
       </div>
