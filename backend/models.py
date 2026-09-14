@@ -47,7 +47,11 @@ class DoctorStatus(str, enum.Enum):
     ON_LEAVE = "on_leave"
     OFF_DUTY = "off_duty"         # outside working hours today
 
-
+class ReferralStatus(str, enum.Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    COMPLETED = "completed"
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
@@ -132,3 +136,57 @@ class DoctorSchedule(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     doctor = relationship("Doctor", back_populates="schedules")
+
+class Referral(Base):
+    """
+    Referral created when a villager/ASHA needs care at a health facility.
+    Tracks the referral from creation through completion.
+    """
+
+    __tablename__ = "referrals"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+
+    # Patient information
+    patient_name = Column(String(120), nullable=False)
+    patient_phone = Column(String(15), nullable=True)
+
+    # Who created the referral
+    created_by = Column(
+        UUID(as_uuid=False),
+        ForeignKey("users.id"),
+        nullable=True
+    )
+
+    # Destination facility
+    facility_id = Column(
+        UUID(as_uuid=False),
+        ForeignKey("facilities.id"),
+        nullable=False
+    )
+
+    # Reason for referral
+    symptoms = Column(Text, nullable=True)
+    triage_level = Column(String(30), nullable=True)
+    notes = Column(Text, nullable=True)
+
+    # Current referral state
+    status = Column(
+        Enum(ReferralStatus),
+        nullable=False,
+        default=ReferralStatus.PENDING
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    creator = relationship("User")
+    facility = relationship("Facility")

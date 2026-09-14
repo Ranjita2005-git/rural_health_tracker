@@ -165,6 +165,32 @@ export interface ApiChatResponse {
   steps_hi: string[]
   steps_en: string[]
 }
+export interface ApiReferral {
+  id: string
+  patient_name: string
+  patient_phone: string | null
+  created_by: string | null
+  facility_id: string
+  symptoms: string | null
+  triage_level: string | null
+  notes: string | null
+  status: 'pending' | 'accepted' | 'rejected' | 'completed'
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface ReferralCreatePayload {
+  patient_name: string
+  patient_phone?: string
+  facility_id: string
+  symptoms?: string
+  triage_level?: string
+  notes?: string
+}
+
+export interface ReferralStatusUpdatePayload {
+  status: 'pending' | 'accepted' | 'rejected' | 'completed'
+}
 
 // ---------------------------------------------------------------------------
 // Auth
@@ -342,4 +368,62 @@ export async function sendChatMessage(
     method: 'POST',
     body: JSON.stringify({ message, lang }),
   })
+}
+
+// ---------------------------------------------------------------------------
+// Referrals
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a referral for a health facility.
+ *
+ * Works for both:
+ * - unauthenticated Villagers
+ * - authenticated ASHA workers
+ */
+export async function createReferral(
+  payload: ReferralCreatePayload
+): Promise<ApiReferral | null> {
+  return apiFetch<ApiReferral>('/referrals', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/**
+ * Get referrals created by the current logged-in user.
+ */
+export async function getMyReferrals(): Promise<ApiReferral[] | null> {
+  return apiFetch<ApiReferral[]>('/referrals/my')
+}
+
+/**
+ * Get all referrals for a particular facility.
+ *
+ * Admin / facility staff only.
+ */
+export async function getFacilityReferrals(
+  facilityId: string
+): Promise<ApiReferral[] | null> {
+  return apiFetch<ApiReferral[]>(
+    `/referrals/facility/${facilityId}`
+  )
+}
+
+/**
+ * Update the status of a referral.
+ *
+ * Admin / facility staff only.
+ */
+export async function updateReferralStatus(
+  referralId: string,
+  status: ReferralStatusUpdatePayload['status']
+): Promise<ApiReferral | null> {
+  return apiFetch<ApiReferral>(
+    `/referrals/${referralId}/status`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }
+  )
 }

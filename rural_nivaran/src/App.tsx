@@ -1,4 +1,5 @@
 import { NavProvider, useNav } from './context/NavContext'
+import { AuthProvider } from './context/AuthContext'
 import MobileShell from './components/MobileShell'
 import SplashScreen from './screens/SplashScreen'
 import RoleSelect from './screens/RoleSelect'
@@ -11,6 +12,7 @@ import LogVisit from './screens/asha/LogVisit'
 import PHCAdmin from './screens/admin/PHCAdmin'
 import OutbreakAlert from './screens/OutbreakAlert'
 import AIChatbot from './screens/villager/AIChatbot'
+import LoginScreen from './screens/LoginScreen'
 
 function AppRouter() {
   const { screen } = useNav()
@@ -19,6 +21,7 @@ function AppRouter() {
     <MobileShell>
       {screen === 'splash' && <SplashScreen />}
       {screen === 'role-select' && <RoleSelect />}
+      {screen === 'login' && <LoginScreen />}
       {screen === 'villager-home' && <VillagerHome />}
       {screen === 'symptom-input' && <SymptomInput />}
       {screen === 'triage-result' && <TriageResult />}
@@ -36,8 +39,10 @@ function AppRouter() {
 
 export default function App() {
   return (
-    <NavProvider>
-      <AppRouter />
-    </NavProvider>
+    <AuthProvider>
+      <NavProvider>
+        <AppRouter />
+      </NavProvider>
+    </AuthProvider>
   )
 }

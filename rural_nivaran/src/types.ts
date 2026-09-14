@@ -3,6 +3,7 @@ export type Role = 'villager' | 'asha' | 'admin'
 export type Screen =
   | 'splash'
   | 'role-select'
+  | 'login'
   | 'villager-home'
   | 'symptom-input'
   | 'triage-result'
@@ -12,6 +13,7 @@ export type Screen =
   | 'admin-dashboard'
   | 'outbreak-alert'
   | 'ai-chatbot'
+ 
 
 export interface Doctor {
   id: string

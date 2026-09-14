@@ -1,9 +1,9 @@
-import datetime
+from datetime import datetime, time
 from typing import Optional, List
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from models import UserRole, FacilityType, DoctorStatus
+from models import UserRole, FacilityType, DoctorStatus,ReferralStatus
 
 
 # ---------------------------------------------------------------------------
@@ -90,9 +90,9 @@ class DoctorOut(BaseModel):
 
 class DoctorScheduleCreateOrUpdate(BaseModel):
     doctor_id: str
-    expected_arrival_time: Optional[datetime.time] = None
-    expected_departure_time: Optional[datetime.time] = None
-    actual_arrival_time: Optional[datetime.time] = None
+    expected_arrival_time: Optional[time] = None
+    expected_departure_time: Optional[time] = None
+    actual_arrival_time: Optional[time] = None
     status: DoctorStatus = DoctorStatus.AVAILABLE
     notes: Optional[str] = None
 
@@ -101,7 +101,7 @@ class DoctorScheduleStatusPatch(BaseModel):
     """Lightweight patch used for quick status flips, e.g. marking 'delayed'."""
     status: DoctorStatus
     notes: Optional[str] = None
-    actual_arrival_time: Optional[datetime.time] = None
+    actual_arrival_time: Optional[time] = None
 
 
 class DoctorAvailabilityOut(BaseModel):
@@ -121,12 +121,12 @@ class DoctorAvailabilityOut(BaseModel):
     distance_km: Optional[float] = None
 
     status: DoctorStatus
-    expected_arrival_time: Optional[datetime.time] = None
-    expected_departure_time: Optional[datetime.time] = None
-    actual_arrival_time: Optional[datetime.time] = None
+    expected_arrival_time: Optional[time] = None
+    expected_departure_time: Optional[time] = None
+    actual_arrival_time: Optional[time] = None
     notes: Optional[str] = None
 
-    updated_at: datetime.datetime
+    updated_at: datetime
 
 
 class FacilityAvailabilitySummary(BaseModel):
@@ -137,3 +137,32 @@ class FacilityAvailabilitySummary(BaseModel):
     distance_km: Optional[float] = None
     doctors: List[DoctorAvailabilityOut]
     has_available_doctor: bool
+
+class ReferralCreate(BaseModel):
+    patient_name: str
+    patient_phone: str | None = None
+    facility_id: str
+    symptoms: str | None = None
+    triage_level: str | None = None
+    notes: str | None = None
+
+
+class ReferralStatusUpdate(BaseModel):
+    status: ReferralStatus
+
+
+class ReferralOut(BaseModel):
+    id: str
+    patient_name: str
+    patient_phone: str | None
+    created_by: str | None
+    facility_id: str
+    symptoms: str | None
+    triage_level: str | None
+    notes: str | None
+    status: ReferralStatus
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

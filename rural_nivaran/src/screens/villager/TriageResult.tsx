@@ -1,8 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNav } from '../../context/NavContext'
 import { useTranslation } from 'react-i18next'
 
 type Level = 'home' | 'phc' | 'urgent'
+
+interface ChatbotResponse {
+  message_hi?: string
+  message_en?: string
+  disease?: string | null
+  disease_name_hi?: string | null
+  disease_name_en?: string | null
+  triage?: Level | null
+  triage_label_hi?: string | null
+  triage_label_en?: string | null
+  steps_hi?: string[]
+  steps_en?: string[]
+}
 
 const RESULTS = {
   home: {
@@ -39,9 +52,24 @@ const RESULTS = {
 
 export default function TriageResult() {
   const { navigate, goBack } = useNav()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
-  const [level, setLevel] = useState<Level>('home')
+  const [chatbotResponse, setChatbotResponse] =
+    useState<ChatbotResponse | null>(null)
+
+  useEffect(() => {
+    const savedResponse = localStorage.getItem('chatbotResponse')
+
+    if (savedResponse) {
+      try {
+        setChatbotResponse(JSON.parse(savedResponse))
+      } catch (error) {
+        console.error('Invalid chatbot response:', error)
+      }
+    }
+  }, [])
+
+  const level: Level = chatbotResponse?.triage ?? 'home'
   const r = RESULTS[level]
 
   const resultContent = {
@@ -123,6 +151,29 @@ export default function TriageResult() {
 
   const content = resultContent[level]
 
+  // Detect current language
+  const lang = i18n.language.startsWith('hi') ? 'hi' : 'en'
+
+  // Use chatbot-generated steps
+  const chatbotSteps =
+    lang === 'hi'
+      ? chatbotResponse?.steps_hi ?? []
+      : chatbotResponse?.steps_en ?? []
+
+  // Use chatbot-generated disease name
+  const diseaseName =
+    lang === 'hi'
+      ? chatbotResponse?.disease_name_hi
+      : chatbotResponse?.disease_name_en
+
+  // Use chatbot steps when available, otherwise keep old fallback steps
+  const displaySteps =
+    chatbotSteps.length > 0
+      ? chatbotSteps
+      : lang === 'hi'
+        ? content.steps.map((step) => step.hi)
+        : content.steps.map((step) => step.en)
+
   return (
     <div className="min-h-full bg-cream overflow-y-auto">
       {/* Header */}
@@ -173,27 +224,6 @@ export default function TriageResult() {
         </div>
       </div>
 
-      {/* Demo level switcher */}
-      <div className="flex gap-2 px-5 mt-4">
-        {(['home', 'phc', 'urgent'] as Level[]).map((l) => (
-          <button
-            key={l}
-            onClick={() => setLevel(l)}
-            className={`flex-1 text-xs py-2 rounded-xl font-semibold transition-all ${
-              level === l
-                ? 'bg-zinc-800 text-white shadow'
-                : 'bg-white text-zinc-400 border border-zinc-200'
-            }`}
-          >
-            {l === 'home'
-              ? `🏠 ${t('triage.homeButton')}`
-              : l === 'phc'
-              ? `🏥 ${t('triage.phcButton')}`
-              : `🚨 ${t('triage.urgentButton')}`}
-          </button>
-        ))}
-      </div>
-
       {/* Detected symptoms */}
       <div className="px-5 mt-4">
         <div className="bg-white rounded-xl p-4 border border-cream-dark">
@@ -202,22 +232,24 @@ export default function TriageResult() {
           </p>
 
           <p className="devanagari text-zinc-700 text-sm leading-relaxed italic">
-            "{t('triage.symptomSentence')}"
+            "{localStorage.getItem('symptoms') || 'No symptoms detected'}"
+          </p>
+        </div>
+      </div>
+
+      {/* Disease */}
+      <div className="px-5 mt-4">
+        <div className="bg-white rounded-xl p-4 border border-cream-dark">
+          <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-wide mb-2">
+            {lang === 'hi' ? 'संभावित बीमारी' : 'Possible Condition'}
           </p>
 
-          <div className="flex flex-wrap gap-2 mt-3">
-            <span className="devanagari bg-zinc-100 text-zinc-600 text-xs px-2.5 py-1 rounded-lg font-medium">
-              {t('triage.fever')}
-            </span>
-
-            <span className="devanagari bg-zinc-100 text-zinc-600 text-xs px-2.5 py-1 rounded-lg font-medium">
-              {t('triage.headache')}
-            </span>
-
-            <span className="devanagari bg-zinc-100 text-zinc-600 text-xs px-2.5 py-1 rounded-lg font-medium">
-              {t('triage.nausea')}
-            </span>
-          </div>
+          <p className="text-zinc-800 text-lg font-bold">
+            {diseaseName ||
+              (lang === 'hi'
+                ? 'कोई बीमारी निर्धारित नहीं'
+                : 'No specific condition detected')}
+          </p>
         </div>
       </div>
 
@@ -226,11 +258,11 @@ export default function TriageResult() {
         <p
           className={`devanagari font-bold text-base ${r.stepText} mb-3`}
         >
-          {content.titleHi}
+          {diseaseName || content.titleHi}
         </p>
 
         <div className="flex flex-col gap-2">
-          {content.steps.map((step, i) => (
+          {displaySteps.map((step, i) => (
             <div
               key={i}
               className={`${r.stepBg} border ${r.stepBorder} rounded-xl p-3 flex gap-3 items-start`}
@@ -243,13 +275,11 @@ export default function TriageResult() {
 
               <div>
                 <p
-                  className={`devanagari ${r.stepText} text-sm font-semibold`}
+                  className={`${
+                    lang === 'hi' ? 'devanagari' : ''
+                  } ${r.stepText} text-sm font-semibold`}
                 >
-                  {step.hi}
-                </p>
-
-                <p className="text-zinc-500 text-xs">
-                  {step.en}
+                  {step}
                 </p>
               </div>
             </div>

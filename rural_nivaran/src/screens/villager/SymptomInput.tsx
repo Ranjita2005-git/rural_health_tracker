@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useNav } from '../../context/NavContext'
 import { useTranslation } from 'react-i18next'
 
@@ -6,53 +6,118 @@ type Phase = 'idle' | 'recording' | 'analyzing'
 
 export default function SymptomInput() {
   const { navigate, goBack } = useNav()
-  const { t } = useTranslation()
+  const { t,i18n } = useTranslation()
 
   const [phase, setPhase] = useState<Phase>('idle')
-  const [transcriptIdx, setTranscriptIdx] = useState(0)
+  const [transcript, setTranscript] = useState('')
 
-  const TRANSCRIPT_STEPS = [
-  '',
-  'मुझे...',
-  'मुझे तीन दिन से...',
-  'मुझे तीन दिन से बुखार है,',
-  'मुझे तीन दिन से बुखार है, सिर में दर्द है',
-  'मुझे तीन दिन से बुखार है, सिर में दर्द है और उल्टी जैसा लग रहा है।'
-]
+  const recognitionRef = useRef<any>(null)
+  const transcriptRef = useRef('')
 
 
-  useEffect(() => {
-    if (phase === 'recording') {
-      let i = 0
+  const handleMicPress = async() => {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition
 
-      const interval = setInterval(() => {
-        i++
-        setTranscriptIdx(i)
-
-        if (i >= TRANSCRIPT_STEPS.length - 1) {
-          clearInterval(interval)
-        }
-      }, 600)
-
-      return () => clearInterval(interval)
-    }
-
-    if (phase === 'analyzing') {
-      const timeout = setTimeout(() => {
-        navigate('triage-result')
-      }, 2200)
-
-      return () => clearTimeout(timeout)
-    }
-  }, [phase, navigate, TRANSCRIPT_STEPS.length])
-
-  const handleMicPress = () => {
-    if (phase === 'idle') {
-      setPhase('recording')
-    } else if (phase === 'recording') {
-      setPhase('analyzing')
-    }
+  if (!SpeechRecognition) {
+    alert('Speech recognition is not supported in this browser.')
+    return
   }
+
+  if (phase === 'idle') {
+    const recognition = new SpeechRecognition()
+
+    const selectedLanguage = i18n.language.startsWith('bn')
+      ? 'bn-IN'
+      : i18n.language.startsWith('en')
+      ? 'en-IN'
+      : 'hi-IN'
+
+  recognition.lang = selectedLanguage
+    recognition.continuous = true
+    recognition.interimResults = true
+
+    recognitionRef.current = recognition
+    transcriptRef.current = ''
+    setTranscript('')
+    setPhase('recording')
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = ''
+      let interimTranscript = ''
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const text = event.results[i][0].transcript
+
+        if (event.results[i].isFinal) {
+          finalTranscript += text
+        } else {
+          interimTranscript += text
+        }
+      }
+
+      if (finalTranscript) {
+        transcriptRef.current += finalTranscript + ' '
+      }
+
+      setTranscript(
+        transcriptRef.current + interimTranscript
+      )
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error)
+      setPhase('idle')
+    }
+
+    recognition.onend = () => {
+      setTranscript(transcriptRef.current.trim())
+    }
+
+    recognition.start()
+
+  } else if (phase === 'recording') {
+  recognitionRef.current?.stop()
+
+  const finalText = transcriptRef.current.trim()
+
+  if (!finalText) {
+    setPhase('idle')
+    return
+  }
+
+  localStorage.setItem('symptoms', finalText)
+
+  setPhase('analyzing')
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/chat/message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: finalText,
+        lang: 'hi',
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Chat API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    localStorage.setItem('chatbotResponse', JSON.stringify(data))
+
+    navigate('triage-result')
+  } catch (error) {
+    console.error('Chatbot connection error:', error)
+    navigate('triage-result')
+  }
+  }
+}
 
   return (
     <div className="h-full bg-forest flex flex-col pt-8">
@@ -213,7 +278,7 @@ export default function SymptomInput() {
 
           <p className="devanagari text-white text-base leading-relaxed min-h-12">
 
-            {TRANSCRIPT_STEPS[transcriptIdx]}
+            {transcript}
 
             {phase === 'recording' && (
               <span className="inline-block w-0.5 h-4 bg-green-300 ml-0.5 animate-pulse align-middle" />

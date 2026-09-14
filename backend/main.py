@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from referralsRouter import router as referrals_router
 from database import Base, engine
 import authRouter, facilitiesRouter, doctorsRouter, availabilityRouter,chatRouter
 
@@ -36,6 +36,7 @@ app.include_router(facilitiesRouter.router)
 app.include_router(doctorsRouter.router)
 app.include_router(availabilityRouter.router)
 app.include_router(chatRouter.router)
+app.include_router(referrals_router)
 
 @app.get("/", tags=["Health Check"])
 def root():

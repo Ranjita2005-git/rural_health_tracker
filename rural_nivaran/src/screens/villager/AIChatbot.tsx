@@ -214,24 +214,72 @@ export default function AIChatbot() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
+  const sendMessage = async () => {
+  const text = input.trim()
+  if (!text) return
 
-  const sendMessage = () => {
-    const text = input.trim()
-    if (!text) return
-
-    const userMsg: ChatMessage = { id: Date.now(), role: 'user', text }
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setIsTyping(true)
-
-    // Simulate brief "thinking" delay
-    setTimeout(() => {
-      const botMsg = buildBotMessage(text, lang)
-      setMessages(prev => [...prev, botMsg])
-      setIsTyping(false)
-    }, 700)
+  const userMsg: ChatMessage = {
+    id: Date.now(),
+    role: 'user',
+    text,
   }
 
+  setMessages(prev => [...prev, userMsg])
+  setInput('')
+  setIsTyping(true)
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/chat/message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: text,
+        lang: lang,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Chat API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    const botMsg: ChatMessage = {
+      id: Date.now() + 1,
+      role: 'assistant',
+      text: lang === 'hi' ? data.message_hi : data.message_en,
+      disease: data.disease,
+      diseaseNameHi: data.disease_name_hi,
+      diseaseNameEn: data.disease_name_en,
+      triage: data.triage,
+      triageLabelHi: data.triage_label_hi,
+      triageLabelEn: data.triage_label_en,
+      stepsHi: data.steps_hi,
+      stepsEn: data.steps_en,
+    }
+
+    setMessages(prev => [...prev, botMsg])
+  } catch (error) {
+    console.error('Chatbot error:', error)
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        role: 'assistant',
+        text:
+          lang === 'hi'
+            ? 'माफ़ कीजिए, अभी सर्वर से संपर्क नहीं हो पा रहा है। कृपया थोड़ी देर बाद फिर कोशिश करें।'
+            : 'Sorry, I could not connect to the server. Please try again.',
+      },
+    ])
+  } finally {
+    setIsTyping(false)
+  }
+}
+  
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
